@@ -1,78 +1,37 @@
-const db = require("../db");
+const repo = require("../repositories/posts.repository");
 
-exports.findAll = () => {
-  return new Promise((resolve, reject) => {
-    db.all("SELECT * FROM posts", (err, rows) => {
-      if (err) {
-        reject(err);
-      }
-      resolve(rows);
-    });
-  });
+exports.findAll = async () => {
+  return repo.findAll();
 };
 
-exports.findById = (id) => {
-  return new Promise((resolve, reject) => {
-    db.get("SELECT * FROM posts WHERE id = ?", [id], (err, row) => {
-      if (err) {
-        reject(err);
-      }
-      resolve(row);
-    });
-  });
+exports.findById = async (id) => {
+  const post = await repo.findById(id);
+  if (!post) {
+    throw new Error("NOT_FOUND");
+  }
+  return post;
 };
 
-exports.create = ({ title, content }) => {
+exports.create = async ({ title, content }) => {
   if (!title || !content) {
     throw new Error("INVALID_INPUT");
   }
 
-  return new Promise((resolve, reject) => {
-    db.run(
-      "INSERT INTO posts (title, content) VALUES (?, ?)",
-      [title, content],
-      function (err) {
-        if (err) {
-          reject(err);
-        }
-        resolve({
-          id: this.lastID,
-          title,
-          content,
-        });
-      }
-    );
-  });
+  return repo.create({ title, content });
 };
 
-exports.update = (id, data) => {
-  return new Promise((resolve, reject) => {
-    db.run(
-      "UPDATE posts SET title = ?, content = ? WHERE id = ?",
-      [data.title, data.content, id],
-      function (err) {
-        if (err) {
-          reject(err);
-        }
-        if (this.changes === 0) {
-          reject(new Error("NOT_FOUND"));
-        }
-        resolve();
-      }
-    );
-  });
+exports.update = async (id, data) => {
+  const updatedPost = await repo.update(id, data);
+  if (updatedPost === 0) {
+    throw new Error("NOT_FOUND");
+  }
+  return updatedPost;
 };
 
-exports.remove = (id) => {
-  return new Promise((resolve, reject) => {
-    db.run("DELETE FROM posts WHERE id = ?", [id], function (err) {
-      if (err) {
-        reject(err);
-      }
-      if (this.changes === 0) {
-        reject(new Error("NOT_FOUND"));
-      }
-      resolve();
-    });
-  });
+exports.remove = async (id) => {
+  const removedPost = await repo.remove(id);
+  if (removedPost === 0) {
+    throw new Error("NOT_FOUND");
+  }
+  return removedPost;
 };
