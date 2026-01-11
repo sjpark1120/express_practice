@@ -1,33 +1,37 @@
 const service = require("../services/posts.service");
 
-exports.getPosts = (req, res) => {
-  res.json(service.findAll());
+exports.getPosts = async (req, res) => {
+  try {
+    const posts = await service.findAll();
+    res.json(posts);
+  } catch (err) {
+    next(err);
+  }
 };
 
-exports.getPostById = (req, res, next) => {
+exports.getPostById = async (req, res, next) => {
   try {
-    const post = service.findById(parseInt(req.params.id));
-    if (!post) throw new Error("NOT_FOUND");
+    const post = await service.findById(parseInt(req.params.id));
     res.json(post);
   } catch (err) {
     next(err);
   }
 };
 
-exports.createPost = (req, res, next) => {
+exports.createPost = async (req, res, next) => {
   try {
     const { title, content } = req.body;
-    const newPost = service.create({ title, content });
+    const newPost = await service.create({ title, content });
     res.status(201).json(newPost);
   } catch (err) {
     next(err);
   }
 };
 
-exports.updatePost = (req, res, next) => {
+exports.updatePost = async (req, res, next) => {
   try {
     const { title, content } = req.body;
-    const updatedPost = service.update(parseInt(req.params.id), {
+    const updatedPost = await service.update(parseInt(req.params.id), {
       title,
       content,
     });
@@ -37,9 +41,9 @@ exports.updatePost = (req, res, next) => {
   }
 };
 
-exports.deletePost = (req, res, next) => {
+exports.deletePost = async (req, res, next) => {
   try {
-    service.remove(parseInt(req.params.id));
+    await service.remove(parseInt(req.params.id));
     res.status(204).send();
   } catch (err) {
     next(err);

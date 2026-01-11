@@ -3,6 +3,9 @@ const app = express();
 
 app.use(express.json());
 
+const { initDB } = require("./db/init");
+initDB();
+
 const postsRouter = require("./routes/posts");
 app.use("/posts", postsRouter);
 
